@@ -3,7 +3,7 @@
 class SpyTest extends \PHPUnit_Framework_TestCase {
 	protected function tearDown()
 	{
-		Spy::flushSpiedMethods();
+		Spy::flushRecorders();
 	}
 
 	function test_instance_NoParams_ReturnsInstanceOfRegistry()
@@ -26,7 +26,7 @@ class SpyTest extends \PHPUnit_Framework_TestCase {
 	function test_overloadedCall_WithParams_AddsMethodCallWithParams()
 	{
 		Spy::foo('foo1', 'foo2');
-		$method = Spy::getSpiedMethod('foo');
+		$method = Spy::getRecorder('foo');
 
 		$result = $method->getCalls();
 
@@ -35,7 +35,7 @@ class SpyTest extends \PHPUnit_Framework_TestCase {
 	function test_overloadedCall_WhenCalledFromExternalMethod_AddsMethodCallWithEmtpyArgumentList()
 	{
 		spyTestStubFunction();
-		$method = Spy::getSpiedMethod('spyTestStubFunction');
+		$method = Spy::getRecorder('spyTestStubFunction');
 
 		$result = $method->getCalls();
 
@@ -44,7 +44,7 @@ class SpyTest extends \PHPUnit_Framework_TestCase {
 	function test_overloadedCall_WhenCalledFromExternalMethodWithParams_AddsMetehodCallWithArguments()
 	{
 		spyTestStubFunction('foo1', 'foo2');
-		$method = Spy::getSpiedMethod('spyTestStubFunction');
+		$method = Spy::getRecorder('spyTestStubFunction');
 
 		$result = $method->getCalls();
 
@@ -52,7 +52,7 @@ class SpyTest extends \PHPUnit_Framework_TestCase {
 	}
 	function test_overloadedCall_WhenResultSet_ReturnsResult()
 	{
-		Spy::setMethodResult('spyTestStubFunction', 'result');
+		Spy::setFunctionResult('spyTestStubFunction', 'result');
 
 		$result = spyTestStubFunction('foo1', 'foo2');
 

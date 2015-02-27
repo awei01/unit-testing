@@ -15,231 +15,235 @@ class SpyTraitTest extends \PHPUnit_Framework_TestCase {
 		$test = $this->makeTestCase();
 		$test->initSpy();
 
-		$this->assertInstanceOf('UnitTesting\FunctionSpy\Registry', $test->getSpy());
-	}
-	function test_flushSpy_WhenSpySet_CallsFlushSpiedMethodsOnSpyWithNoArgs()
-	{
-		$test = $this->makeTestCase();
-		$test->setSpy($mockSpy = $this->fakeRegistry());
-
-		$mockSpy->shouldReceive('flushSpiedMethods')->once()->withNoArgs();
-
-		$test->flushSpy();
+		$this->assertInstanceOf('UnitTesting\FunctionSpy\Registry', $test->getRecorder());
 	}
 	protected function fakeRegistry()
 	{
 		return m::mock('UnitTesting\FunctionSpy\Registry');
 	}
-
-	protected function fakeTestCaseWithFakeTracker()
+	function test_flushSpy_WhenSpySet_CallsFlushRecordersOnSpyWithNoArgs()
 	{
-		$test = m::spy('UnitTesting\FunctionSpy\TestCaseUsingTraitStub[pass,fail]');
-		$test->setSpy($this->fakeRegistry());
-		return $test;
+		$test = $this->makeTestCase();
+		$test->setRecorder($mockSpy = $this->fakeRegistry());
+
+		$mockSpy->shouldReceive('flushRecorders')->once()->withNoArgs();
+
+		$test->flushSpy();
 	}
+
 
 // assertFunctionNotCalled
-	function test_assertFunctionNotCalled_Name_CallsGetSpiedMethodOnSpyWithName()
+	protected function fakeTestCaseWithFakeSpy()
 	{
-		$test = $this->fakeTestCaseWithFakeTracker();
-
-		$test->getSpy()->shouldReceive('getSpiedMethod')->once()->with('someMethod');
-
-		$test->assertFunctionNotCalled('someMethod');
+		$test = m::mock('UnitTesting\FunctionSpy\TestCaseUsingTraitStub[fail]');
+		$test->setRecorder($this->fakeRegistry());
+		return $test;
 	}
-	function test_assertFunctionNotCalled_WhenGetSpiedMethodOnSpyReturnsNull_NeverCallsFail()
+	function test_assertFunctionNotCalled_Name_CallsGetRecorderOnSpyWithName()
 	{
-		$mockTest = $this->fakeTestCaseWithFakeTracker();
-		$mockTest->getSpy()->shouldReceive('getSpiedMethod')->andReturn(null);
+		$test = $this->fakeTestCaseWithFakeSpy();
+
+		$test->getRecorder()->shouldReceive('getRecorder')->once()->with('someFunction');
+
+		$test->assertFunctionNotCalled('someFunction');
+	}
+	function test_assertFunctionNotCalled_WhenGetRecorderOnSpyReturnsNull_NeverCallsFail()
+	{
+		$mockTest = $this->fakeTestCaseWithFakeSpy();
+		$mockTest->getRecorder()->shouldReceive('getRecorder')->andReturn(null);
 
 		$mockTest->shouldReceive('fail')->never();
 
-		$mockTest->assertFunctionNotCalled('someMethod');
+		$mockTest->assertFunctionNotCalled('someFunction');
 	}
-	protected function mockMethod()
+	protected function mockRecorder()
 	{
-		return m::spy('UnitTesting\FunctionSpy\Method');
+		return m::mock('UnitTesting\FunctionSpy\Recorder');
 	}
-	function test_assertFunctionNotCalled_WhenGetSpiedMethodOnSpyReturnsMethod_CallsWasCalledOnMethod()
+	function test_assertFunctionNotCalled_WhenGetRecorderOnSpyReturnsMethod_CallsWasCalledOnMethod()
 	{
-		$test = $this->fakeTestCaseWithFakeTracker();
-		$test->getSpy()->shouldReceive('getSpiedMethod')->andReturn($mockMethod = $this->mockMethod());
+		$test = $this->fakeTestCaseWithFakeSpy();
+		$test->getRecorder()->shouldReceive('getRecorder')->andReturn($mockRecorder = $this->mockRecorder());
 
-		$mockMethod->shouldReceive('wasCalled')->once()->withNoArgs();
+		$mockRecorder->shouldReceive('wasCalled')->once()->withNoArgs();
 
-		$test->assertFunctionNotCalled('someMethod');
+		$test->assertFunctionNotCalled('someFunction');
 	}
 	function test_assertFunctionNotCalled_WhenWasCalledOnMethodReturnsFalse_NeverCallsFail()
 	{
-		$mockTest = $this->fakeTestCaseWithFakeTracker();
-		$mockTest->getSpy()->shouldReceive('getSpiedMethod')->andReturn($stubMethod = $this->mockMethod());
-		$stubMethod->shouldReceive('wasCalled')->andReturn(false);
+		$mockTest = $this->fakeTestCaseWithFakeSpy();
+		$mockTest->getRecorder()->shouldReceive('getRecorder')->andReturn($stubRecorder = $this->mockRecorder());
+		$stubRecorder->shouldReceive('wasCalled')->andReturn(false);
 
 		$mockTest->shouldReceive('fail')->never();
 
-		$mockTest->assertFunctionNotCalled('someMethod');
+		$mockTest->assertFunctionNotCalled('someFunction');
 	}
 	function test_assertFunctionNotCalled_WhenWasCalledOnMethodReturnsTrue_CallsFailWithMessage()
 	{
-		$mockTest = $this->fakeTestCaseWithFakeTracker();
-		$mockTest->getSpy()->shouldReceive('getSpiedMethod')->andReturn($stubMethod = $this->mockMethod());
-		$stubMethod->shouldReceive('wasCalled')->andReturn(true);
+		$mockTest = $this->fakeTestCaseWithFakeSpy();
+		$mockTest->getRecorder()->shouldReceive('getRecorder')->andReturn($stubRecorder = $this->mockRecorder());
+		$stubRecorder->shouldReceive('wasCalled')->andReturn(true);
 
-		$mockTest->shouldReceive('fail')->once()->with('Expected [someMethod] not to be called, but it was called.');
+		$mockTest->shouldReceive('fail')->once()->with('Expected [someFunction] not to be called, but it was called.');
 
-		$mockTest->assertFunctionNotCalled('someMethod');
+		$mockTest->assertFunctionNotCalled('someFunction');
 	}
 	function test_assertFunctionNotCalled_MethodAndArgumentsPassed_ThrowsInvalidArgumentError()
 	{
-		$test = $this->fakeTestCaseWithFakeTracker();
+		$test = $this->fakeTestCaseWithFakeSpy();
 
 		$this->setExpectedException('InvalidArgumentException', '@assertFunctionNotCalled() expects only a method parameter. Did you mean to use @assertFunctionNotCalledWith()?');
 
-		$test->assertFunctionNotCalled('someMethod', array('foo'));
+		$test->assertFunctionNotCalled('someFunction', array('foo'));
 	}
 
 // assertFunctionNotCalledWith
-	function test_assertFunctionNotCalledWith_NameAndArrayOfParams_CallsGetSpiedMethodOnSpyWithMethod()
+	function test_assertFunctionNotCalledWith_NameAndArrayOfParams_CallsGetRecorderOnSpyWithMethod()
 	{
-		$test = $this->fakeTestCaseWithFakeTracker();
+		$test = $this->fakeTestCaseWithFakeSpy();
 
-		$test->getSpy()->shouldReceive('getSpiedMethod')->once()->with('someMethod');
+		$test->getRecorder()->shouldReceive('getRecorder')->once()->with('someFunction');
 
-		$test->assertFunctionNotCalledWith('someMethod', array('foo', 'bar'));
+		$test->assertFunctionNotCalledWith('someFunction', array('foo', 'bar'));
 	}
-	function test_assertFunctionNotCalledWith_WhenGetSpiedMethodOnSpyReturnsNull_NeverCallsFail()
+	function test_assertFunctionNotCalledWith_WhenGetRecorderOnSpyReturnsNull_NeverCallsFail()
 	{
-		$mockTest = $this->fakeTestCaseWithFakeTracker();
-		$mockTest->getSpy()->shouldReceive('getSpiedMethod')->andReturn(null);
+		$mockTest = $this->fakeTestCaseWithFakeSpy();
+		$mockTest->getRecorder()->shouldReceive('getRecorder')->andReturn(null);
 
 		$mockTest->shouldReceive('fail')->never();
 
-		$mockTest->assertFunctionNotCalledWith('someMethod', array('foo', 'bar'));
+		$mockTest->assertFunctionNotCalledWith('someFunction', array('foo', 'bar'));
 	}
-	function test_assertFunctionNotCalledWith_MethodAndArgsWhenGetSpiedMethodOnSpyReturnsMethod_CallsWasCalledWithOnMethodWithArgs()
+	function test_assertFunctionNotCalledWith_MethodAndArgsWhenGetRecorderOnSpyReturnsMethod_CallsWasCalledWithOnMethodWithArgs()
 	{
-		$test = $this->fakeTestCaseWithFakeTracker();
-		$test->getSpy()->shouldReceive('getSpiedMethod')->andReturn($mockMethod = $this->mockMethod());
+		$test = $this->fakeTestCaseWithFakeSpy();
+		$test->getRecorder()->shouldReceive('getRecorder')->andReturn($mockRecorder = $this->mockRecorder());
 
-		$mockMethod->shouldReceive('wasCalledWith')->once()->with($args = array('foo', 'bar'));
+		$mockRecorder->shouldReceive('wasCalledWith')->once()->with($args = array('foo', 'bar'));
 
-		$test->assertFunctionNotCalledWith('someMethod', $args);
+		$test->assertFunctionNotCalledWith('someFunction', $args);
 	}
 	function test_assertFunctionNotCalledWith_WhenWasCalledWithOnMethodReturnsFalse_NeverCallsFail()
 	{
-		$mockTest = $this->fakeTestCaseWithFakeTracker();
-		$mockTest->getSpy()->shouldReceive('getSpiedMethod')->andReturn($stubMethod = $this->mockMethod());
-		$stubMethod->shouldReceive('wasCalledWith')->andReturn(false);
+		$mockTest = $this->fakeTestCaseWithFakeSpy();
+		$mockTest->getRecorder()->shouldReceive('getRecorder')->andReturn($stubRecorder = $this->mockRecorder());
+		$stubRecorder->shouldReceive('wasCalledWith')->andReturn(false);
 
 		$mockTest->shouldReceive('fail')->never();
 
-		$mockTest->assertFunctionNotCalledWith('someMethod', array('foo', 'bar'));
+		$mockTest->assertFunctionNotCalledWith('someFunction', array('foo', 'bar'));
 	}
 	function test_assertFunctionNotCalledWith_WhenWasCalledWithOnMethodReturnsTrue_CallsFailWithMessage()
 	{
-		$mockTest = $this->fakeTestCaseWithFakeTracker();
-		$mockTest->getSpy()->shouldReceive('getSpiedMethod')->andReturn($stubMethod = $this->mockMethod());
-		$stubMethod->shouldReceive('wasCalledWith')->andReturn(true);
+		$mockTest = $this->fakeTestCaseWithFakeSpy();
+		$mockTest->getRecorder()->shouldReceive('getRecorder')->andReturn($stubRecorder = $this->mockRecorder());
+		$stubRecorder->shouldReceive('wasCalledWith')->andReturn(true);
 
-		$mockTest->shouldReceive('fail')->once()->with('Expected [someMethod] not to be called with [foo, bar].');
+		$mockTest->shouldReceive('fail')->once()->with('Expected [someFunction] not to be called with [foo, bar].');
 
-		$mockTest->assertFunctionNotCalledWith('someMethod', array('foo', 'bar'));
+		$mockTest->assertFunctionNotCalledWith('someFunction', array('foo', 'bar'));
 	}
 
 // assertFunctionCalledWith
 	function test_assertFunctionCalledWith_NameAndArrayOfParams_CallsGetOnSpyWithMethod()
 	{
-		$test = $this->fakeTestCaseWithFakeTracker();
+		$test = $this->fakeTestCaseWithFakeSpy();
+		$test->shouldReceive('fail');
 
-		$test->getSpy()->shouldReceive('getSpiedMethod')->once()->with('someMethod');
+		$test->getRecorder()->shouldReceive('getRecorder')->once()->with('someFunction');
 
-		$test->assertFunctionCalledWith('someMethod', array('foo', 'bar'));
+		$test->assertFunctionCalledWith('someFunction', array('foo', 'bar'));
 	}
-	function test_assertFunctionCalledWith_WhenGetSpiedMethodOnSpyReturnsNull_CallsFailWithMessage()
+	function test_assertFunctionCalledWith_WhenGetRecorderOnSpyReturnsNull_CallsFailWithMessage()
 	{
-		$mockTest = $this->fakeTestCaseWithFakeTracker();
-		$mockTest->getSpy()->shouldReceive('getSpiedMethod')->andReturn(null);
+		$mockTest = $this->fakeTestCaseWithFakeSpy();
+		$mockTest->getRecorder()->shouldReceive('getRecorder')->andReturn(null);
 
-		$mockTest->shouldReceive('fail')->once()->with('Expected [someMethod] to be called with [foo, bar].');
+		$mockTest->shouldReceive('fail')->once()->with('Expected [someFunction] to be called with [foo, bar].');
 
-		$mockTest->assertFunctionCalledWith('someMethod', array('foo', 'bar'));
+		$mockTest->assertFunctionCalledWith('someFunction', array('foo', 'bar'));
 	}
-	function test_assertFunctionCalledWith_MethodAndArgsWhenGetSpiedMethodOnSpyReturnsMethod_CallsWasCalledWithOnMethodWithArgs()
+	function test_assertFunctionCalledWith_MethodAndArgsWhenGetRecorderOnSpyReturnsMethod_CallsWasCalledWithOnMethodWithArgs()
 	{
-		$test = $this->fakeTestCaseWithFakeTracker();
-		$test->getSpy()->shouldReceive('getSpiedMethod')->andReturn($mockMethod = $this->mockMethod());
+		$test = $this->fakeTestCaseWithFakeSpy();
+		$test->shouldReceive('fail');
+		$test->getRecorder()->shouldReceive('getRecorder')->andReturn($mockRecorder = $this->mockRecorder());
 
-		$mockMethod->shouldReceive('wasCalledWith')->once()->with($args = array('foo', 'bar'));
+		$mockRecorder->shouldReceive('wasCalledWith')->once()->with($args = array('foo', 'bar'));
 
-		$test->assertFunctionCalledWith('someMethod', $args);
+		$test->assertFunctionCalledWith('someFunction', $args);
 	}
 	function test_assertFunctionCalledWith_WhenWasCalledWithOnMethodReturnsTrue_NeverCallsFail()
 	{
-		$mockTest = $this->fakeTestCaseWithFakeTracker();
-		$mockTest->getSpy()->shouldReceive('getSpiedMethod')->andReturn($stubMethod = $this->mockMethod());
-		$stubMethod->shouldReceive('wasCalledWith')->andReturn(true);
+		$mockTest = $this->fakeTestCaseWithFakeSpy();
+		$mockTest->getRecorder()->shouldReceive('getRecorder')->andReturn($stubRecorder = $this->mockRecorder());
+		$stubRecorder->shouldReceive('wasCalledWith')->andReturn(true);
 
 		$mockTest->shouldReceive('fail')->never();
 
-		$mockTest->assertFunctionCalledWith('someMethod', array('foo', 'bar'));
+		$mockTest->assertFunctionCalledWith('someFunction', array('foo', 'bar'));
 	}
 	function test_assertFunctionCalledWith_WhenWasCalledWithOnMethodReturnsFalse_CallsFailWithMessage()
 	{
-		$mockTest = $this->fakeTestCaseWithFakeTracker();
-		$mockTest->getSpy()->shouldReceive('getSpiedMethod')->andReturn($stubMethod = $this->mockMethod());
-		$stubMethod->shouldReceive('wasCalledWith')->andReturn(false);
+		$mockTest = $this->fakeTestCaseWithFakeSpy();
+		$mockTest->getRecorder()->shouldReceive('getRecorder')->andReturn($stubRecorder = $this->mockRecorder());
+		$stubRecorder->shouldReceive('wasCalledWith')->andReturn(false);
 
-		$mockTest->shouldReceive('fail')->once()->with('Expected [someMethod] to be called with [foo, bar].');
+		$mockTest->shouldReceive('fail')->once()->with('Expected [someFunction] to be called with [foo, bar].');
 
-		$mockTest->assertFunctionCalledWith('someMethod', array('foo', 'bar'));
+		$mockTest->assertFunctionCalledWith('someFunction', array('foo', 'bar'));
 	}
 
 // assertFunctionLastCalledWith
-	function test_assertFunctionLastCalledWith_NameAndArrayOfParams_CallsGetSpiedMethodOnSpyWithName()
+	function test_assertFunctionLastCalledWith_NameAndArrayOfParams_CallsGetRecorderOnSpyWithName()
 	{
-		$test = $this->fakeTestCaseWithFakeTracker();
+		$test = $this->fakeTestCaseWithFakeSpy();
+		$test->shouldReceive('fail');
 
-		$test->getSpy()->shouldReceive('getSpiedMethod')->once()->with('someMethod');
+		$test->getRecorder()->shouldReceive('getRecorder')->once()->with('someFunction');
 
-		$test->assertFunctionLastCalledWith('someMethod', array('foo', 'bar'));
+		$test->assertFunctionLastCalledWith('someFunction', array('foo', 'bar'));
 	}
-	function test_assertFunctionLastCalledWith_WhenGetSpiedMethodOnSpyReturnsNull_CallsFailWithMessage()
+	function test_assertFunctionLastCalledWith_WhenGetRecorderOnSpyReturnsNull_CallsFailWithMessage()
 	{
-		$mockTest = $this->fakeTestCaseWithFakeTracker();
-		$mockTest->getSpy()->shouldReceive('getSpiedMethod')->andReturn(null);
+		$mockTest = $this->fakeTestCaseWithFakeSpy();
+		$mockTest->getRecorder()->shouldReceive('getRecorder')->andReturn(null);
 
-		$mockTest->shouldReceive('fail')->once()->with('Expected [someMethod] to be called, but it was never called.');
+		$mockTest->shouldReceive('fail')->once()->with('Expected [someFunction] to be called, but it was never called.');
 
-		$mockTest->assertFunctionLastCalledWith('someMethod', array('foo', 'bar'));
+		$mockTest->assertFunctionLastCalledWith('someFunction', array('foo', 'bar'));
 	}
-	function test_assertFunctionLastCalledWith_MethodAndArgsWhenGetSpiedMethodOnSpyReturnsMethod_CallsWasLastCalledWithOnMethodWithArgs()
+	function test_assertFunctionLastCalledWith_MethodAndArgsWhenGetRecorderOnSpyReturnsMethod_CallsWasLastCalledWithOnMethodWithArgs()
 	{
-		$test = $this->fakeTestCaseWithFakeTracker();
-		$test->getSpy()->shouldReceive('getSpiedMethod')->andReturn($mockMethod = $this->mockMethod());
+		$test = $this->fakeTestCaseWithFakeSpy();
+		$test->shouldReceive('fail');
+		$test->getRecorder()->shouldReceive('getRecorder')->andReturn($mockRecorder = $this->mockRecorder());
 
-		$mockMethod->shouldReceive('wasLastCalledWith')->once()->with($args = array('foo', 'bar'));
+		$mockRecorder->shouldReceive('wasLastCalledWith')->once()->with($args = array('foo', 'bar'));
 
-		$test->assertFunctionLastCalledWith('someMethod', $args);
+		$test->assertFunctionLastCalledWith('someFunction', $args);
 	}
 	function test_assertFunctionLastCalledWith_WasLastCalledWithOnMethodReturnsFalse_CallsFailWithMessage()
 	{
-		$mockTest = $this->fakeTestCaseWithFakeTracker();
-		$mockTest->getSpy()->shouldReceive('getSpiedMethod')->andReturn($stubMethod = $this->mockMethod());
-		$stubMethod->shouldReceive('wasLastCalledWith')->andReturn(false);
+		$mockTest = $this->fakeTestCaseWithFakeSpy();
+		$mockTest->getRecorder()->shouldReceive('getRecorder')->andReturn($stubRecorder = $this->mockRecorder());
+		$stubRecorder->shouldReceive('wasLastCalledWith')->andReturn(false);
 
-		$mockTest->shouldReceive('fail')->once()->with('Expected [someMethod] last called with [foo, bar].');
+		$mockTest->shouldReceive('fail')->once()->with('Expected [someFunction] last called with [foo, bar].');
 
-		$mockTest->assertFunctionLastCalledWith('someMethod', array('foo', 'bar'));
+		$mockTest->assertFunctionLastCalledWith('someFunction', array('foo', 'bar'));
 	}
 	function test_assertFunctionLastCalledWith_WasLastCalledWithOnMethodReturnsTrue_NeverCallsFail()
 	{
-		$mockTest = $this->fakeTestCaseWithFakeTracker();
-		$mockTest->getSpy()->shouldReceive('getSpiedMethod')->andReturn($stubMethod = $this->mockMethod());
-		$stubMethod->shouldReceive('wasLastCalledWith')->andReturn(true);
+		$mockTest = $this->fakeTestCaseWithFakeSpy();
+		$mockTest->getRecorder()->shouldReceive('getRecorder')->andReturn($stubRecorder = $this->mockRecorder());
+		$stubRecorder->shouldReceive('wasLastCalledWith')->andReturn(true);
 
 		$mockTest->shouldReceive('fail')->never();
 
-		$mockTest->assertFunctionLastCalledWith('someMethod', array('foo', 'bar'));
+		$mockTest->assertFunctionLastCalledWith('someFunction', array('foo', 'bar'));
 	}
 /*
 */
@@ -261,12 +265,12 @@ class TestCaseUsingTraitStub {
 		$this->traitFlushSpy();
 	}
 
-	public function getSpy()
+	public function getRecorder()
 	{
 		return $this->spy;
 	}
 
-	public function setSpy($spy)
+	public function setRecorder($spy)
 	{
 		$this->spy = $spy;
 	}

@@ -1,10 +1,10 @@
 <?php namespace UnitTesting\FunctionSpy;
 
-class MethodTest extends \PHPUnit_Framework_TestCase {
+class RecorderTest extends \PHPUnit_Framework_TestCase {
 
 	function test_construct_NoParams_HasEmptyArguments()
 	{
-		$method = new Method();
+		$method = new Recorder();
 
 		$result = $method->getCalls();
 
@@ -13,7 +13,7 @@ class MethodTest extends \PHPUnit_Framework_TestCase {
 
 	function test_addCall_Array_AddsArrayToArgumentsArray()
 	{
-		$method = new Method();
+		$method = new Recorder();
 		$method->addCall(array('foo', 'bar'));
 
 		$result = $method->getCalls();
@@ -23,7 +23,7 @@ class MethodTest extends \PHPUnit_Framework_TestCase {
 
 	function test_addCall_Array_ReturnsSelf()
 	{
-		$method = new Method();
+		$method = new Recorder();
 
 		$result = $method->addCall(array('foo', 'bar'));
 
@@ -32,7 +32,7 @@ class MethodTest extends \PHPUnit_Framework_TestCase {
 
 	function test_wasCalled_WhenArgumentsNotSet_ReturnsFalse()
 	{
-		$method = new Method();
+		$method = new Recorder();
 
 		$result = $method->wasCalled();
 
@@ -40,7 +40,7 @@ class MethodTest extends \PHPUnit_Framework_TestCase {
 	}
 	function test_wasCalled_WhenArgumentsSet_ReturnsTrue()
 	{
-		$method = new Method();
+		$method = new Recorder();
 		$method->addCall(array('foo', 'bar'));
 
 		$result = $method->wasCalled();
@@ -50,7 +50,7 @@ class MethodTest extends \PHPUnit_Framework_TestCase {
 
 	function test_wasCalledWith_WhenArgumentsDontMatch_ReturnsFalse()
 	{
-		$method = new Method();
+		$method = new Recorder();
 		$method->addCall(array('foo1', 'foo2'));
 
 		$result = $method->wasCalledWith(array('bar1', 'bar2'));
@@ -59,7 +59,7 @@ class MethodTest extends \PHPUnit_Framework_TestCase {
 	}
 	function test_wasCalledWith_WhenArgumentsMatch_ReturnsTrue()
 	{
-		$method = new Method();
+		$method = new Recorder();
 		$method->addCall(array('foo1', 'foo2'));
 
 		$result = $method->wasCalledWith(array('foo1', 'foo2'));
@@ -69,7 +69,7 @@ class MethodTest extends \PHPUnit_Framework_TestCase {
 
 	function test_wasLastCalledWith_WhenArgumentsDontMatch_ReturnsFalse()
 	{
-		$method = new Method();
+		$method = new Recorder();
 		$method->addCall(array('foo1', 'foo2'));
 
 		$result = $method->wasLastCalledWith(array('bar1', 'bar2'));
@@ -78,7 +78,7 @@ class MethodTest extends \PHPUnit_Framework_TestCase {
 	}
 	function test_wasLastCalledWith_WhenArgumentsMatch_ReturnsTrue()
 	{
-		$method = new Method();
+		$method = new Recorder();
 		$method->addCall(array('foo1', 'foo2'));
 
 		$result = $method->wasLastCalledWith(array('foo1', 'foo2'));
@@ -88,7 +88,7 @@ class MethodTest extends \PHPUnit_Framework_TestCase {
 
 	function test_getResult_NoParams_ReturnsNull()
 	{
-		$method = new Method();
+		$method = new Recorder();
 
 		$result = $method->getResult();
 
@@ -96,7 +96,7 @@ class MethodTest extends \PHPUnit_Framework_TestCase {
 	}
 	function test_setResult_Value_SetsResult()
 	{
-		$method = new Method();
+		$method = new Recorder();
 		$method->setResult('result');
 
 		$result = $method->getResult();

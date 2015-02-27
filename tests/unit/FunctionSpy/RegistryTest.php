@@ -7,96 +7,138 @@ class RegistryTest extends \PHPUnit_Framework_TestCase {
 		return new Registry();
 	}
 
-// setMethodResult
-	function test_setMethodResult_MethodAndResult_SetsResultOnMethod()
+// setFunctionResult
+	function test_setFunctionResult_MethodAndResult_SetsResultOnMethod()
 	{
 		$registry = $this->makeRegistry();
-		$registry->setMethodResult('foo', 'foo result');
-		$method = $registry->getSpiedMethod('foo');
+		$registry->setFunctionResult('foo', 'foo result');
+		$recorder = $registry->getRecorder('foo');
 
-		$result = $method->getResult();
+		$result = $recorder->getResult();
 
 		$this->assertEquals('foo result', $result);
 	}
-// spyMethodCall
-	function test_spyMethodCall_MethodAndArray_SetsMethodsWithMethodAsKeyAndValueAsInstanceOfMethod()
+// handling overloaded calls
+	function test_overloadedCall_MethodAndArray_SetsMethodsWithMethodAsKeyAndValueAsInstanceOfRecorder()
 	{
 		$registry = $this->makeRegistry();
-		$registry->spyMethodCall('foo', array('foo1', 'foo2'));
+		$registry->foo('param1', 'param2');
 
-		$result = $registry->getSpiedMethod('foo');
+		$result = $registry->getRecorder('foo');
 
-		$this->assertInstanceOf('UnitTesting\FunctionSpy\Method', $result);
+		$this->assertInstanceOf('UnitTesting\FunctionSpy\Recorder', $result);
 	}
-	function test_spyMethodCall_MethodAndArray_SetsArgumentsOnMethod()
+	function test_overloadedCall_MethodAndArray_SetsArgumentsOnRecorder()
 	{
 		$registry = $this->makeRegistry();
-		$registry->spyMethodCall('foo', array('foo1', 'foo2'));
-		$method = $registry->getSpiedMethod('foo');
+		$registry->foo('param1', 'param2');
+		$recorder = $registry->getRecorder('foo');
 
-		$result = $method->getCalls();
+		$result = $recorder->getCalls();
 
-		$this->assertEquals(array(array('foo1', 'foo2')), $result);
+		$this->assertEquals(array(array('param1', 'param2')), $result);
 	}
-	function test_spyMethodCall_MethodAndArrayCalledMoreThanOnce_AddsArgumentsOnMethod()
+	function test_overloadedCall_MethodAndArrayCalledMoreThanOnce_AddsArgumentsOnMethod()
 	{
 		$registry = $this->makeRegistry();
-		$registry->spyMethodCall('foo', array('foo1', 'foo2'));
-		$registry->spyMethodCall('foo', array('foo3', 'foo4'));
-		$method = $registry->getSpiedMethod('foo');
+		$registry->foo('param1', 'param2');
+		$registry->foo('param3', 'param4');
+		$recorder = $registry->getRecorder('foo');
 
-		$result = $method->getCalls();
+		$result = $recorder->getCalls();
 
-		$this->assertEquals(array(array('foo1', 'foo2'), array('foo3', 'foo4')), $result);
+		$this->assertEquals(array(array('param1', 'param2'), array('param3', 'param4')), $result);
 	}
-	function test_spyMethodCall_WhenResultNotSet_ReturnsNull()
+	function test_overloadedCall_WhenResultNotSet_ReturnsNull()
 	{
 		$registry = $this->makeRegistry();
-		$result = $registry->spyMethodCall('foo', array('foo1', 'foo2'));
+		$result = $registry->foo('param1', 'param2');
 
 		$this->assertNull($result);
-	}
-	function test_spyMethodCall_WhenResultIsSet_ReturnsResult()
-	{
-		$registry = $this->makeRegistry();
-		$registry->setMethodResult('foo', 'foo result');
-
-		$result = $registry->spyMethodCall('foo', array('foo1', 'foo2'));
-
-		$this->assertEquals('foo result', $result);
-	}
-
-// flushSpiedMethods
-	function test_flushSpiedMethods_WhenMethodsSet_SetsMethodsAsEmptyArray()
-	{
-		$registry = $this->makeRegistry();
-		$registry->spyMethodCall('foo', array('foo1', 'foo2'));
-		$registry->flushSpiedMethods();
-
-		$result = $registry->getAllSpiedMethods();
-
-		$this->assertEquals(array(), $result);
-	}
-
-// handling overloaded calls
-	function test_overloadedCall_WithParams_AddsMethodCallWithParams()
-	{
-		$registry = $this->makeRegistry();
-		$registry->foo('foo1', 'foo2');
-		$method = $registry->getSpiedMethod('foo');
-
-		$result = $method->getCalls();
-
-		$this->assertEquals(array(array('foo1', 'foo2')), $result);
 	}
 	function test_overloadedCall_WhenResultIsSet_ReturnsResult()
 	{
 		$registry = $this->makeRegistry();
-		$registry->setMethodResult('foo', 'foo result');
+		$registry->setFunctionResult('foo', 'foo result');
 
-		$result = $registry->foo('foo1', 'foo2');
+		$result = $registry->foo('param1', 'param2');
 
 		$this->assertEquals('foo result', $result);
+	}
+
+// flushRecorders
+	function test_flushRecorders_WhenMethodsSet_SetsMethodsAsEmptyArray()
+	{
+		$registry = $this->makeRegistry();
+		$registry->foo('param1', 'param2');
+		$registry->flushRecorders();
+
+		$result = $registry->getRecorders();
+
+		$this->assertEquals(array(), $result);
+	}
+
+// array access
+	function test_offsetExists_SpySet_ReturnsTrue()
+	{
+		$registry = $this->makeRegistry();
+		$registry->foo();
+
+		$result = isset($registry['foo']);
+
+		$this->assertTrue($result);
+	}
+	function test_offsetExists_SpyNotSet_ReturnsFalse()
+	{
+		$registry = $this->makeRegistry();
+
+		$result = isset($registry['foo']);
+
+		$this->assertFalse($result);
+	}
+	function test_offsetGet_SpySet_ReturnsSpy()
+	{
+		$registry = $this->makeRegistry();
+		$registry->foo();
+		$recorder = $registry->getRecorder('foo');
+
+		$result = $registry['foo'];
+
+		$this->assertEquals($recorder, $result);
+	}
+	function test_offsetGet_SpyNotSet_ReturnsInstanceOfRecorder()
+	{
+		$registry = $this->makeRegistry();
+
+		$result = $registry['foo'];
+
+		$this->assertInstanceOf('UnitTesting\FunctionSpy\Recorder', $result);
+	}
+	function test_offsetGet_CalledTwice_ReturnsSameInstanceOfRecorder()
+	{
+		$registry = $this->makeRegistry();
+		$recorder = $registry['foo'];
+
+		$result = $registry['foo'];
+
+		$this->assertEquals($recorder, $result);
+	}
+	function test_offsetSet_KeyAndValue_SetsResultOnRecorder()
+	{
+		$registry = $this->makeRegistry();
+		$registry['foo'] = 'bar';
+
+		$result = $registry->getRecorder('foo')->getResult();
+
+		$this->assertEquals('bar', $result);
+	}
+	function test_offsetUnset_KeyAndValue_ThrowsOverflowException()
+	{
+		$registry = $this->makeRegistry();
+
+		$this->setExpectedException('OverflowException', 'Cannot unset property');
+
+		unset($registry['foo']);
 	}
 
 /*

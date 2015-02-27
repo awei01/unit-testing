@@ -15,29 +15,62 @@ class SpyTraitIntegrationTest extends \PHPUnit_Framework_TestCase {
 	{
 		spyIntegrationTestStubFunction('foo', 'bar');
 
-		$this->assertEquals(array(array('foo', 'bar')), $this->spy->getSpiedMethod('spyIntegrationTestStubFunction')->getCalls());
+		$result = $this->spy->getRecorder('spyIntegrationTestStubFunction')->getCalls();
+
+		$this->assertEquals(array(array('foo', 'bar')), $result);
 	}
 	function test_callingSpiedFunctionFromClassMethod_ProperlyRecordsMethodAndCalls()
 	{
 		$myclass = new SpyTraitFakeClassStub();
 		$myclass->callSpiedMethod('foo', 'bar');
 
-		$this->assertEquals(array(array('foo', 'bar')), $this->spy->getSpiedMethod('spyIntegrationTestStubFunction')->getCalls());
+		$result = $this->spy->getRecorder('spyIntegrationTestStubFunction')->getCalls();
+
+		$this->assertEquals(array(array('foo', 'bar')), $result);
 	}
-	function test_setMethodResult_ReturnsResult()
+	function test_setFunctionResultFromStatic_SetsResultForRecorder()
 	{
-		Spy::setMethodResult('spyIntegrationTestStubFunction', 'foo');
-		$this->assertEquals('foo', spyIntegrationTestStubFunction('foo', 'bar'));
+		Spy::setFunctionResult('spyIntegrationTestStubFunction', 'result');
+
+		$result = spyIntegrationTestStubFunction('foo', 'bar');
+
+		$this->assertEquals('result', $result);
 	}
-	function test_subesquentTestImplicitlyFlushesCallsOnSpy()
+	function test_setFunctionResultFromSpyProperty_SetsResultForRecorder()
 	{
-		$this->assertEquals(array(), $this->spy->getAllSpiedMethods());
+		$this->spy->setFunctionResult('spyIntegrationTestStubFunction', 'result');
+
+		$result = spyIntegrationTestStubFunction('foo', 'bar');
+
+		$this->assertEquals('result', $result);
 	}
-	function test_assertFunctionNotCalled_WhenMethodNotCalled_Passes()
+	function test_setResultOnSpyKey_SetsResultForRecorder()
+	{
+		$this->spy['spyIntegrationTestStubFunction']->setResult('result');
+
+		$result = spyIntegrationTestStubFunction('foo', 'bar');
+
+		$this->assertEquals('result', $result);
+	}
+	function test_offsetSetOnSpy_SetsResultForRecorder()
+	{
+		$this->spy['spyIntegrationTestStubFunction'] = 'result';
+
+		$result = spyIntegrationTestStubFunction('foo', 'bar');
+
+		$this->assertEquals('result', $result);
+	}
+	function test_subesquentTestImplicitlyFlushesRecordersOnSpy()
+	{
+		$result = $this->spy->getRecorders();
+
+		$this->assertEquals(array(), $result);
+	}
+	function test_assertFunctionNotCalled_WhenFunctionNotCalled_Passes()
 	{
 		$this->assertFunctionNotCalled('spyIntegrationTestStubFunction');
 	}
-	function test_assertFunctionNotCalled_WhenMethodIsCalled_FailsAsExpected()
+	function test_assertFunctionNotCalled_WhenFunctionIsCalled_FailsAsExpected()
 	{
 		spyIntegrationTestStubFunction('foo', 'bar');
 
@@ -46,13 +79,13 @@ class SpyTraitIntegrationTest extends \PHPUnit_Framework_TestCase {
 		$this->assertFunctionNotCalled('spyIntegrationTestStubFunction');
 	}
 
-	function test_assertFunctionNotCalledWith_WhenMethodNotCalledWithArguments_Passes()
+	function test_assertFunctionNotCalledWith_WhenFunctionNotCalledWithParams_Passes()
 	{
 		spyIntegrationTestStubFunction('foo', 'bar');
 
 		$this->assertFunctionNotCalledWith('spyIntegrationTestStubFunction', array('bar', 'baz'));
 	}
-	function test_assertFunctionNotCalledWith_WhenMethodIsCalledWithArguments_FailsAsExpected()
+	function test_assertFunctionNotCalledWith_WhenFunctionIsCalledWithParams_FailsAsExpected()
 	{
 		spyIntegrationTestStubFunction('foo', 'bar');
 
@@ -61,21 +94,21 @@ class SpyTraitIntegrationTest extends \PHPUnit_Framework_TestCase {
 		$this->assertFunctionNotCalledWith('spyIntegrationTestStubFunction', array('foo', 'bar'));
 	}
 
-	function test_assertFunctionCalledWith_WhenMethodCalledWithParams_TracksFirstCall()
+	function test_assertFunctionCalledWith_WhenFunctionCalledWithParams_TracksFirstCall()
 	{
 		spyIntegrationTestStubFunction('foo', 'bar');
 		spyIntegrationTestStubFunction('baz', 'boo');
 
 		$this->assertFunctionCalledWith('spyIntegrationTestStubFunction', array('foo', 'bar'));
 	}
-	function test_assertFunctionCalledWith_WhenMethodCalledWithParams_TracksLastCall()
+	function test_assertFunctionCalledWith_WhenFunctionCalledWithParams_TracksLastCall()
 	{
 		spyIntegrationTestStubFunction('foo', 'bar');
 		spyIntegrationTestStubFunction('baz', 'boo');
 
 		$this->assertFunctionCalledWith('spyIntegrationTestStubFunction', array('baz', 'boo'));
 	}
-	function test_assertFunctionCalledWith_WhenMethodNotCalledWithParams_FailsAsExpected()
+	function test_assertFunctionCalledWith_WhenFunctionNotCalledWithParams_FailsAsExpected()
 	{
 		spyIntegrationTestStubFunction('foo', 'bar');
 		spyIntegrationTestStubFunction('baz', 'boo');
@@ -85,14 +118,14 @@ class SpyTraitIntegrationTest extends \PHPUnit_Framework_TestCase {
 		$this->assertFunctionCalledWith('spyIntegrationTestStubFunction', array('zar', 'zoo'));
 	}
 
-	function test_assertFunctionLastCalledWith_WhenMethodCalledWithParams_Passes()
+	function test_assertFunctionLastCalledWith_WhenFunctionCalledWithParams_Passes()
 	{
 		spyIntegrationTestStubFunction('foo', 'bar');
 		spyIntegrationTestStubFunction('baz', 'boo');
 
 		$this->assertFunctionLastCalledWith('spyIntegrationTestStubFunction', array('baz', 'boo'));
 	}
-	function test_assertFunctionLastCalledWith_WhenMethodNotCalledWithParams_FailsAsExpected()
+	function test_assertFunctionLastCalledWith_WhenFunctionNotCalledWithParams_FailsAsExpected()
 	{
 		spyIntegrationTestStubFunction('foo', 'bar');
 		spyIntegrationTestStubFunction('baz', 'boo');
