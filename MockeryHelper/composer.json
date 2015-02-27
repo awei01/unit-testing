@@ -1,0 +1,23 @@
+{
+    "name": "unit-testing/mockery-helper",
+    "description": "a simple trait for convenient implementation of mockery mocks and spies in PHPUnit tests",
+    "keywords": ["phpunit", "mockery", "testing", "trait"],
+    "license": "MIT",
+    "authors": [],
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "autoload": {
+        "psr-0": {
+            "UnitTesting\\MockeryHelper\\": ""
+        }
+    },
+    "minimum-stability": "stable",
+    "require-dev": {
+        "phpunit/phpunit": "~4.4",
+        "mockery/mockery": "0.9.*"
+    },
+    "suggest": {
+        "mockery/mockery": "Don't forget to install mockery/mockery in require-dev"
+    }
+}

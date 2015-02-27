@@ -1,0 +1,6 @@
+# Composer stuff
+/vendor
+composer.lock
+
+# System files
+.DS_Store

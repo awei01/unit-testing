@@ -1,0 +1,19 @@
+{
+    "name": "awei01/unit-testing",
+    "description": "Some PHP unit testing utilties",
+    "license": "MIT",
+    "authors": [],
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "UnitTesting\\": ""
+        }
+    },
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.4",
+        "mockery/mockery": "0.9.*"
+    }
+}
