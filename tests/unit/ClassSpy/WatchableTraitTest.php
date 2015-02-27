@@ -129,6 +129,45 @@ class WatchableTraitTest extends \PHPUnit_Framework_TestCase {
 
 		$this->assertNull($result);
 	}
+
+// static methods
+	function test_getAllStaticMethodCallsOnStatic_WhenStaticMethodCalledWithArgs_ReturnsArrayOfMethodWithItsArguments()
+	{
+		WatchableTraitTestStub::doSomethingStatic('param1', 'param2');
+		WatchableTraitTestStub::doSomethingStatic('param3');
+
+		$result = WatchableTraitTestStub::getAllStaticMethodCalls();
+
+		$this->assertEquals(array('doSomethingStatic' => array(array('param1', 'param2'), array('param3'))), $result);
+	}
+	function test_getAllStaticMethodCallsOnStatic_WhenOtherStaticMethodInUse_DoesNotAffectStatic()
+	{
+		WatchableTraitTestStub::doSomethingStatic('param1', 'param2');
+		WatchableTraitTestStub::doSomethingStatic('param3');
+
+		$result = WatchableTraitOtherTestStub::getAllStaticMethodCalls();
+
+		$this->assertEquals(array(), $result);
+	}
+	function test_flushStatic_NoParams_SetsMethodCallsToEmptyArray()
+	{
+		WatchableTraitTestStub::doSomethingStatic('param1', 'param2');
+		WatchableTraitTestStub::doSomethingStatic('param3');
+		WatchableTraitTestStub::flushStatic();
+
+		$result = WatchableTraitTestStub::getAllStaticMethodCalls();
+
+		$this->assertEquals(array(), $result);
+	}
+	function test_setStaticMethodResult_MethodAndResult_SetsStaticMethodResult()
+	{
+		WatchableTraitTestStub::setStaticMethodResult('doSomethingStatic', 'result');
+
+		$result = WatchableTraitTestStub::doSomethingStatic('param3');
+
+		$this->assertEquals('result', $result);
+	}
+
 }
 
 class WatchableTraitTestStub {
@@ -139,4 +178,18 @@ class WatchableTraitTestStub {
 		return $this->trackMethodCall();
 	}
 
+	public static function doSomethingStatic()
+	{
+		return self::trackStaticMethodCall();
+	}
+
+}
+
+class WatchableTraitOtherTestStub {
+	use WatchableTrait;
+
+	public static function doSomethingStatic()
+	{
+		return self::trackStaticMethodCall();
+	}
 }
