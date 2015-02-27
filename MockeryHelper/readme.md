@@ -2,8 +2,8 @@
 Simple module to help with creating mocks using mockery. You won't have to continually reference `Mockery\Mockery` and keep your tests a little DRY'er.
 
 ## Installation ##
-* `composer require --dev unit-testing/mockery-helper`
-* or in `require-dev` block of `composer.json`, add `"unit-testing/mockery-helper": "*"` and then run `composer update`
+* `composer require --dev unit-testing/mockery-helper:dev-master`
+* or in `require-dev` block of `composer.json`, add `"unit-testing/mockery-helper": "dev-master"` and then run `composer update`
 * don't forget to `require-dev` `mockery/mockery`
 
 ## Usage ##
