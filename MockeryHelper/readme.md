@@ -1,4 +1,4 @@
-# MockeryTrait #
+# UnitTesting\MockeryHelper #
 Simple module to help with creating mocks using mockery. You won't have to continually reference `Mockery\Mockery` and keep your tests a little DRY'er.
 
 ## Installation ##

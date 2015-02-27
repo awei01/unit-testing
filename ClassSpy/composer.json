@@ -1,13 +1,13 @@
 {
-    "name": "unit-testing/function-spy",
-    "description": "a testing utility for phpunit that helps test globally defined functions",
+    "name": "unit-testing/class-spy",
+    "description": "a simple trait that aids in unit testing protected class methods",
     "keywords": ["phpunit", "testing", "trait"],
     "license": "MIT",
     "authors": [],
     "minimum-stability": "stable",
     "autoload": {
         "psr-4": {
-            "UnitTesting\\FunctionSpy\\": ""
+            "UnitTesting\\ClassSpy\\": ""
         }
     },
     "require": {
