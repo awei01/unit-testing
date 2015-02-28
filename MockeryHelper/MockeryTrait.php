@@ -1,7 +1,7 @@
 <?php namespace UnitTesting\MockeryHelper;
 use Mockery;
 trait MockeryTrait {
-	protected $mocked;
+
 	/**
 	* make a mock
 	*/
